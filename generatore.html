@@ -4,84 +4,84 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Generatore Badge QR</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&family=Montserrat:wght@400;700&family=DM+Serif+Display&family=DM+Sans:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:wght@400;700;900&display=swap');
 :root {
   --ink: #1a1410; --paper: #f5f0e8; --cream: #ede7d5; --gold: #c4922a;
   --gold-light: #e8b84b; --green: #1e7b4b; --red: #c0392b;
   --border: #c8b99a; --muted: #8a7b65; --white: #fdfaf4;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--paper); color: var(--ink); font-family: 'Fraunces', serif; min-height: 100vh; }
+body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', Arial, sans-serif; min-height: 100vh; }
 
-header { background: var(--ink); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; }
-header h1 { color: var(--gold-light); font-size: 1.1rem; letter-spacing: 0.06em; font-family: 'DM Mono', monospace; }
-header span { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.7rem; }
+header { background: var(--ink); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+header h1 { color: var(--gold-light); font-size: 1rem; letter-spacing: 0.06em; font-family: monospace; }
+header span { color: var(--muted); font-family: monospace; font-size: 0.7rem; }
 
-.body { padding: 20px; display: flex; flex-direction: column; gap: 16px; max-width: 600px; margin: 0 auto; }
+.body { padding: 16px; display: flex; flex-direction: column; gap: 14px; max-width: 700px; margin: 0 auto; }
 
 .card { background: var(--white); border: 1.5px solid var(--border); border-radius: 6px; overflow: hidden; }
-.card-header { padding: 10px 16px; background: var(--ink); color: var(--gold-light); font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
-.card-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.card-header { padding: 9px 14px; background: var(--ink); color: var(--gold-light); font-family: monospace; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.card-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 
-.field { display: flex; flex-direction: column; gap: 4px; }
-.field label { font-family: 'DM Mono', monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.field { display: flex; flex-direction: column; gap: 3px; }
+.field label { font-family: monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 .field input, .field select, .field textarea {
-  padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 4px;
-  background: var(--paper); font-family: 'DM Mono', monospace; font-size: 0.8rem;
-  color: var(--ink); outline: none; transition: border-color 0.15s;
+  padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 4px;
+  background: var(--paper); font-family: inherit; font-size: 0.82rem; color: var(--ink); outline: none;
 }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--gold); }
-.field textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
-.field-row { display: flex; gap: 10px; }
-.field-row .field { flex: 1; }
-.hint { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+.field textarea { min-height: 100px; resize: vertical; line-height: 1.6; }
+.field-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.field-row .field { flex: 1; min-width: 120px; }
 
-.key-field { border-color: var(--gold) !important; }
 .key-field label { color: var(--gold) !important; }
 .key-field input { border-color: var(--gold) !important; }
 
-.btn { padding: 13px; border: none; border-radius: 4px; cursor: pointer; font-family: 'DM Mono', monospace; font-weight: 500; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s; }
+/* STILE BADGE - layout a due colonne: controlli | preview */
+.style-layout { display: flex; gap: 16px; align-items: flex-start; }
+.style-controls { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.style-preview-wrap { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.style-preview-label { font-family: monospace; font-size: 0.62rem; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: 0.06em; }
+#previewCanvas { border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+/* Riga controllo stile: etichetta | font select | color picker */
+.style-row { display: flex; align-items: center; gap: 8px; }
+.style-row .style-label { font-family: monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; width: 80px; flex-shrink: 0; }
+.style-row select { flex: 1; padding: 6px 8px; border: 1.5px solid var(--border); border-radius: 4px; background: var(--paper); font-size: 0.78rem; color: var(--ink); outline: none; }
+.style-row select:focus { border-color: var(--gold); }
+.style-row input[type=color] { width: 36px; height: 34px; padding: 2px; border: 1.5px solid var(--border); border-radius: 4px; cursor: pointer; flex-shrink: 0; }
+
+.btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-family: monospace; font-weight: 700; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s; }
 .btn-primary { background: var(--ink); color: var(--gold-light); width: 100%; }
 .btn-primary:hover { background: #2d2620; }
 .btn-secondary { background: transparent; border: 1.5px solid var(--border); color: var(--ink); }
 .btn-secondary:hover { border-color: var(--ink); }
 .btn-green { background: var(--green); color: #fff; }
-.btn-green:hover { background: #165c38; }
 .btn-row { display: flex; gap: 8px; }
 .btn-row .btn { flex: 1; }
 
-#previewArea { display: none; flex-direction: column; gap: 14px; }
-.preview-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--green); border-radius: 4px; color: #fff; font-family: 'DM Mono', monospace; font-size: 0.75rem; }
-
+#previewArea { display: none; flex-direction: column; gap: 12px; }
+.preview-bar { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: var(--green); border-radius: 4px; color: #fff; font-family: monospace; font-size: 0.72rem; }
 .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-.badge-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
-.badge-card:hover { border-color: var(--gold); box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-.badge-card canvas { width: 160px !important; height: 160px !important; display: block; margin: 6px auto; }
-.badge-name { font-weight: 700; font-size: 0.82rem; line-height: 1.2; }
-.badge-meta { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--muted); margin-top: 3px; }
-.badge-day { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--gold); margin-top: 2px; text-transform: uppercase; }
-.secure-badge { display: inline-block; background: var(--green); color: #fff; font-family: 'DM Mono', monospace; font-size: 0.6rem; padding: 2px 7px; border-radius: 10px; margin-top: 4px; }
+.badge-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 6px; padding: 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
+.badge-card:hover { border-color: var(--gold); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.badge-card canvas { width: 140px !important; height: 88px !important; display: block; margin: 4px auto; border-radius: 3px; }
+.badge-name-label { font-weight: 700; font-size: 0.78rem; line-height: 1.2; margin-top: 4px; }
+.badge-meta { font-family: monospace; font-size: 0.56rem; color: var(--muted); margin-top: 2px; }
+.secure-badge { display: inline-block; background: var(--green); color: #fff; font-family: monospace; font-size: 0.55rem; padding: 2px 6px; border-radius: 10px; margin-top: 3px; }
+
+@media (max-width: 520px) {
+  .style-layout { flex-direction: column; }
+  .style-preview-wrap { width: 100%; }
+  #previewCanvas { width: 100%; height: auto; }
+}
 
 @media print {
   header, .card, #previewArea > .btn-row, .preview-bar { display: none !important; }
-  .badges-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 80mm);
-    grid-auto-rows: 50mm;
-    gap: 4mm;
-    padding: 0;
-  }
-  .badge-card {
-    page-break-inside: avoid;
-    border: 0.5px solid #ccc;
-    border-radius: 2mm;
-    width: 80mm;
-    height: 50mm;
-    overflow: hidden;
-  }
-  .badge-card canvas { display: none !important; }
+  .badges-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+  .badge-card { page-break-inside: avoid; border: 0.5px solid #ccc; }
   #previewArea { display: flex !important; }
   body { background: white; }
 }
@@ -93,13 +93,13 @@ header span { color: var(--muted); font-family: 'DM Mono', monospace; font-size:
 <div id="gate" style="position:fixed;inset:0;background:#1a1410;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
   <div style="text-align:center;margin-bottom:8px;">
     <div style="font-size:2rem;margin-bottom:8px;">🔒</div>
-    <div style="font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:#e8b84b;">Area Amministratore</div>
-    <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:#555;margin-top:4px;">Accesso riservato</div>
+    <div style="font-family:monospace;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:#e8b84b;">Area Amministratore</div>
+    <div style="font-family:monospace;font-size:0.62rem;color:#555;margin-top:4px;">Accesso riservato</div>
   </div>
-  <input type="password" id="gateInput" placeholder="Password…" onkeydown="if(event.key==='Enter') checkGate()"
-    style="padding:12px 18px;border:1.5px solid #333;border-radius:4px;background:#111;color:#e8b84b;font-family:'DM Mono',monospace;font-size:0.85rem;outline:none;width:240px;text-align:center;letter-spacing:0.08em;">
-  <button onclick="checkGate()" style="padding:11px 32px;background:#e8b84b;color:#1a1410;border:none;border-radius:4px;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">ENTRA</button>
-  <div id="gateErr" style="font-family:'DM Mono',monospace;font-size:0.68rem;color:#c0392b;min-height:18px;letter-spacing:0.06em;"></div>
+  <input type="password" id="gateInput" placeholder="Password…" onkeydown="if(event.key='Enter') checkGate()"
+    style="padding:12px 18px;border:1.5px solid #333;border-radius:4px;background:#111;color:#e8b84b;font-family:monospace;font-size:0.85rem;outline:none;width:240px;text-align:center;">
+  <button onclick="checkGate()" style="padding:10px 32px;background:#e8b84b;color:#1a1410;border:none;border-radius:4px;font-family:monospace;font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">ENTRA</button>
+  <div id="gateErr" style="font-family:monospace;font-size:0.68rem;color:#c0392b;min-height:18px;"></div>
 </div>
 
 <header>
@@ -109,29 +109,126 @@ header span { color: var(--muted); font-family: 'DM Mono', monospace; font-size:
 
 <div class="body">
 
+  <!-- EVENTO -->
   <div class="card">
     <div class="card-header">① Dati Evento</div>
     <div class="card-body">
       <div class="field-row">
         <div class="field">
           <label>Nome Evento</label>
-          <input type="text" id="eventName" placeholder="es. Convegno VVF 2025">
+          <input type="text" id="eventName" placeholder="es. Congresso 2026" oninput="aggiornaPreview()">
         </div>
         <div class="field">
           <label>Data</label>
-          <input type="text" id="eventDate" placeholder="es. 15/06/2025">
+          <input type="text" id="eventDate" placeholder="es. 17/07/2026" oninput="aggiornaPreview()">
         </div>
       </div>
       <div class="field key-field">
         <label>🔑 Chiave Segreta</label>
         <input type="password" id="secretKey" placeholder="Scegli una password robusta…">
-        <div class="hint">Conservala e comunicala solo agli operatori scanner.</div>
       </div>
     </div>
   </div>
 
+  <!-- STILE BADGE -->
   <div class="card">
-    <div class="card-header">② Partecipanti</div>
+    <div class="card-header">② Stile Badge — anteprima in tempo reale</div>
+    <div class="card-body">
+      <div class="style-layout">
+
+        <!-- Controlli stile -->
+        <div class="style-controls">
+
+          <div class="style-row">
+            <span class="style-label">Sfondo</span>
+            <select id="s_bg_font" onchange="aggiornaPreview()">
+              <option value="">—</option>
+            </select>
+            <input type="color" id="s_bg_color" value="#ffffff" oninput="aggiornaPreview()">
+          </div>
+
+          <div class="style-row">
+            <span class="style-label">Striscia</span>
+            <select id="s_stripe_font" onchange="aggiornaPreview()">
+              <option value="">—</option>
+            </select>
+            <input type="color" id="s_stripe_color" value="#1D9E75" oninput="aggiornaPreview()">
+          </div>
+
+          <div class="style-row">
+            <span class="style-label">Evento</span>
+            <select id="s_event_font" onchange="aggiornaPreview()">
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="'DM Sans', sans-serif">DM Sans</option>
+              <option value="'Open Sans', sans-serif">Open Sans</option>
+              <option value="'Montserrat', sans-serif">Montserrat</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Playfair Display', serif">Playfair Display</option>
+              <option value="'Lora', serif">Lora</option>
+              <option value="'DM Serif Display', serif">DM Serif Display</option>
+            </select>
+            <input type="color" id="s_event_color" value="#1D9E75" oninput="aggiornaPreview()">
+          </div>
+
+          <div class="style-row">
+            <span class="style-label">Data</span>
+            <select id="s_date_font" onchange="aggiornaPreview()">
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="'DM Sans', sans-serif">DM Sans</option>
+              <option value="'Open Sans', sans-serif">Open Sans</option>
+              <option value="'Montserrat', sans-serif">Montserrat</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Playfair Display', serif">Playfair Display</option>
+              <option value="'Lora', serif">Lora</option>
+              <option value="'DM Serif Display', serif">DM Serif Display</option>
+            </select>
+            <input type="color" id="s_date_color" value="#888888" oninput="aggiornaPreview()">
+          </div>
+
+          <div class="style-row">
+            <span class="style-label">Nome</span>
+            <select id="s_name_font" onchange="aggiornaPreview()">
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Playfair Display', serif">Playfair Display</option>
+              <option value="'Lora', serif">Lora</option>
+              <option value="'DM Serif Display', serif">DM Serif Display</option>
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="'DM Sans', sans-serif">DM Sans</option>
+              <option value="'Open Sans', sans-serif">Open Sans</option>
+              <option value="'Montserrat', sans-serif">Montserrat</option>
+            </select>
+            <input type="color" id="s_name_color" value="#1a2e1a" oninput="aggiornaPreview()">
+          </div>
+
+          <div class="style-row">
+            <span class="style-label">Ruolo</span>
+            <select id="s_role_font" onchange="aggiornaPreview()">
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="'DM Sans', sans-serif">DM Sans</option>
+              <option value="'Montserrat', sans-serif">Montserrat</option>
+              <option value="'Open Sans', sans-serif">Open Sans</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Playfair Display', serif">Playfair Display</option>
+              <option value="'Lora', serif">Lora</option>
+            </select>
+            <input type="color" id="s_role_color" value="#1D9E75" oninput="aggiornaPreview()">
+          </div>
+
+        </div>
+
+        <!-- Preview live -->
+        <div class="style-preview-wrap">
+          <div class="style-preview-label">Anteprima badge</div>
+          <canvas id="previewCanvas" width="320" height="200"></canvas>
+          <div class="style-preview-label" style="margin-top:2px;">80 × 50 mm</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARTECIPANTI -->
+  <div class="card">
+    <div class="card-header">③ Partecipanti</div>
     <div class="card-body">
       <div class="field-row">
         <div class="field">
@@ -149,31 +246,26 @@ header span { color: var(--muted); font-family: 'DM Mono', monospace; font-size:
         </div>
         <div class="field">
           <label>Ruolo (opzionale)</label>
-          <input type="text" id="role" placeholder="es. Capitano, VIP, Staff…">
-        </div>
-        <div class="field" style="max-width:80px;">
-          <label>Colore</label>
-          <input type="color" id="badgeColor" value="#5DCAA5"
-            style="width:100%;height:42px;padding:2px;border:1.5px solid var(--border);border-radius:4px;background:var(--paper);cursor:pointer;">
+          <input type="text" id="role" placeholder="es. Capitano, VIP…" oninput="aggiornaPreview()">
         </div>
       </div>
       <div class="field">
         <label>Nomi Partecipanti (uno per riga)</label>
         <textarea id="nameList" placeholder="Mario Rossi&#10;Giulia Bianchi&#10;Luca Verdi&#10;…"></textarea>
-        <div class="hint">Puoi aggiungere più gruppi con giorni diversi — ogni generazione si accumula.</div>
       </div>
       <button class="btn btn-primary" onclick="generateBadges()">⊞ GENERA BADGE QR</button>
     </div>
   </div>
 
+  <!-- PREVIEW GRIGLIA -->
   <div id="previewArea">
     <div class="preview-bar">
       <span id="previewCount">0 badge</span>
-      <span style="opacity:0.8;font-size:0.65rem;">Clicca un badge per scaricarlo come PNG</span>
+      <span style="opacity:0.8;font-size:0.62rem;">Clicca un badge per scaricarlo come PNG</span>
     </div>
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="stampaTutti()">🖨 Stampa tutti</button>
-      <button class="btn btn-green" onclick="exportCSV()">↓ Esporta CSV</button>
+      <button class="btn btn-green" onclick="exportCSV()">↓ Esporta lista TXT</button>
       <button class="btn btn-secondary" onclick="clearAll()">✕ Azzera</button>
     </div>
     <div class="badges-grid" id="badgesGrid"></div>
@@ -229,7 +321,6 @@ async function generateBadges() {
   var dateVal  = document.getElementById('eventDate').value.trim();
   var dayVal   = document.getElementById('allowedDay').value;
   var roleVal  = document.getElementById('role').value.trim();
-  var colorVal = document.getElementById('badgeColor').value;
   var secret   = document.getElementById('secretKey').value.trim();
 
   if (!eventVal) { alert('Inserisci il nome dell\'evento.'); return; }
@@ -245,7 +336,7 @@ async function generateBadges() {
     var payloadStr = JSON.stringify(payloadObj);
     var sig = await sign(payloadStr, secret);
     var finalPayload = payloadStr + '|SIG:' + sig;
-    allBadges.push({ id: id, name: name, event: eventVal, date: dateVal, day: dayVal, role: roleVal, color: colorVal, payload: finalPayload });
+    allBadges.push({ id: id, name: name, event: eventVal, date: dateVal, day: dayVal, role: roleVal, color: colorVal, stile: getStile(), payload: finalPayload });
   }
 
   renderGrid();
@@ -303,98 +394,24 @@ function downloadBadge(idx) {
   var srcCanvas = document.querySelector('canvas[data-idx="' + idx + '"]');
   if (!srcCanvas) return;
 
-  // 80x50mm a 150dpi: 472x295px
-  var W = 472, H = 295;
-  var PAD = 14;
-  var STRIPE = 16;
-  var QR_SIZE = 130;
-  var accent = b.color || '#1D9E75';
-
   var c = document.createElement('canvas');
-  c.width = W; c.height = H;
+  c.width = 472; c.height = 295;
   var ctx = c.getContext('2d');
 
-  // Sfondo bianco
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, W, H);
-
-  // Bordo sottile
-  ctx.strokeStyle = '#cccccc';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
-
-  // Striscia colorata in cima
-  ctx.fillStyle = accent;
-  ctx.fillRect(0, 0, W, STRIPE);
-
-  // ── TESTO a sinistra ──
-  var textW = W - QR_SIZE - PAD * 3; // larghezza zona testo
-
-  // Nome evento
-  ctx.fillStyle = accent;
-  ctx.font = '500 30px Arial, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  // Tronca se troppo lungo
-  var evText = b.event.toUpperCase();
-  while (ctx.measureText(evText).width > textW && evText.length > 3)
-    evText = evText.slice(0, -1);
-  ctx.fillText(evText, PAD, STRIPE + 10);
-
-  // Data
-  if (b.date) {
-    ctx.font = '14px Arial, sans-serif';
-    ctx.fillStyle = '#888888';
-    ctx.fillText(b.date, PAD, STRIPE + 52);
-  }
-
-  // Nome partecipante — grande
-  ctx.fillStyle = '#1a2e1a';
-  ctx.textBaseline = 'top';
-  var nameSize = 38;
-  ctx.font = '500 ' + nameSize + 'px Georgia, serif';
-  while (ctx.measureText(b.name).width > textW + 20 && nameSize > 20) {
-    nameSize--;
-    ctx.font = '500 ' + nameSize + 'px Georgia, serif';
-  }
-  // Spezza su due righe se necessario
-  var nameParts = b.name.split(' ');
-  var nameY = STRIPE + 80;
-  if (nameParts.length >= 2 && ctx.measureText(b.name).width > textW) {
-    var mid = Math.ceil(nameParts.length / 2);
-    var line1 = nameParts.slice(0, mid).join(' ');
-    var line2 = nameParts.slice(mid).join(' ');
-    ctx.fillText(line1, PAD, nameY);
-    ctx.fillText(line2, PAD, nameY + nameSize + 2);
-    nameY += nameSize + 2;
-  } else {
-    ctx.fillText(b.name, PAD, nameY);
-  }
-
-  // Ruolo
-  if (b.role) {
-    ctx.font = '700 30px Arial, sans-serif';
-    ctx.fillStyle = accent;
-    ctx.fillText(b.role.toUpperCase(), PAD, nameY + nameSize + 12);
-  }
-
-
-
-  // ── QR in basso a destra ──
-  var qrX = W - QR_SIZE - PAD / 2;
-  var qrY = H - QR_SIZE - PAD / 2;
-  ctx.drawImage(srcCanvas, qrX, qrY, QR_SIZE, QR_SIZE);
+  disegnaBadge(ctx, 472, 295, {
+    event: b.event, date: b.date, name: b.name, role: b.role, qrCanvas: srcCanvas
+  }, b.stile);
 
   var a = document.createElement('a');
   a.href = c.toDataURL('image/png');
-  a.download = 'badge_' + b.name.replace(/\s+/g, '_') + '_' + b.id + '.png';
+  a.download = 'badge_' + b.name.replace(/\s+/g, '_') + '.png';
   a.click();
 }
+
 
 function stampaTutti() {
   if (!allBadges.length) { alert('Genera prima i badge.'); return; }
 
-  // Genera tutti i PNG e apre una pagina di stampa
   var images = [];
   var total = allBadges.length;
   var done = 0;
@@ -403,71 +420,18 @@ function stampaTutti() {
     var srcCanvas = document.querySelector('canvas[data-idx="' + idx + '"]');
     if (!srcCanvas) { done++; return; }
 
-    var W = 472, H = 295, PAD = 14, STRIPE = 16, QR_SIZE = 130;
-    var accent = b.color || '#1D9E75';
-
     var c = document.createElement('canvas');
-    c.width = W; c.height = H;
+    c.width = 472; c.height = 295;
     var ctx = c.getContext('2d');
 
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = '#cccccc';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
-    ctx.fillStyle = accent;
-    ctx.fillRect(0, 0, W, STRIPE);
-
-    var textW = W - QR_SIZE - PAD * 3;
-    ctx.fillStyle = accent;
-    ctx.font = '500 30px Arial, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    var evText = b.event.toUpperCase();
-    while (ctx.measureText(evText).width > textW && evText.length > 3)
-      evText = evText.slice(0, -1);
-    ctx.fillText(evText, PAD, STRIPE + 10);
-
-    if (b.date) {
-      ctx.font = '14px Arial, sans-serif';
-      ctx.fillStyle = '#888888';
-      ctx.fillText(b.date, PAD, STRIPE + 52);
-    }
-
-    ctx.fillStyle = '#1a2e1a';
-    ctx.textBaseline = 'top';
-    var nameSize = 38;
-    ctx.font = '500 ' + nameSize + 'px Georgia, serif';
-    while (ctx.measureText(b.name).width > textW + 20 && nameSize > 20) {
-      nameSize--;
-      ctx.font = '500 ' + nameSize + 'px Georgia, serif';
-    }
-    var nameParts = b.name.split(' ');
-    var nameY = STRIPE + 80;
-    if (nameParts.length >= 2 && ctx.measureText(b.name).width > textW) {
-      var mid = Math.ceil(nameParts.length / 2);
-      ctx.fillText(nameParts.slice(0, mid).join(' '), PAD, nameY);
-      ctx.fillText(nameParts.slice(mid).join(' '), PAD, nameY + nameSize + 2);
-      nameY += nameSize + 2;
-    } else {
-      ctx.fillText(b.name, PAD, nameY);
-    }
-
-    if (b.role) {
-      ctx.font = '700 30px Arial, sans-serif';
-      ctx.fillStyle = accent;
-      ctx.fillText(b.role.toUpperCase(), PAD, nameY + nameSize + 10);
-    }
-
-    var qrX = W - QR_SIZE - PAD / 2;
-    var qrY = H - QR_SIZE - PAD / 2;
-    ctx.drawImage(srcCanvas, qrX, qrY, QR_SIZE, QR_SIZE);
+    disegnaBadge(ctx, 472, 295, {
+      event: b.event, date: b.date, name: b.name, role: b.role, qrCanvas: srcCanvas
+    }, b.stile);
 
     images[idx] = c.toDataURL('image/png');
     done++;
 
     if (done === total) {
-      // Apre finestra di stampa
       var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Stampa Badge</title>'
         + '<style>'
         + '@page { size: A4; margin: 8mm; }'
@@ -477,19 +441,17 @@ function stampaTutti() {
         + '.badge-img { width: 80mm !important; height: 50mm !important; min-width: 80mm; min-height: 50mm; max-width: 80mm; max-height: 50mm; display: block; object-fit: fill; border: 0.3px solid #ddd; border-radius: 2mm; flex-shrink: 0; }'
         + '</style></head><body>'
         + '<div class="grid">';
-
       images.forEach(function(src) {
         if (src) html += '<img class="badge-img" src="' + src + '">';
       });
-
       html += '</div><script>window.onload=function(){window.print();}<\/script></body></html>';
-
       var w = window.open('', '_blank');
       w.document.write(html);
       w.document.close();
     }
   });
 }
+
 
 function exportCSV() {
   if (!allBadges.length) { alert('Genera prima i badge.'); return; }
@@ -513,6 +475,134 @@ function clearAll() {
   document.getElementById('badgesGrid').innerHTML = '';
   document.getElementById('previewArea').style.display = 'none';
 }
+</script>
+
+// ── LIVE PREVIEW ──────────────────────────────────────────
+function getStile() {
+  return {
+    bgColor:     document.getElementById('s_bg_color').value,
+    stripeColor: document.getElementById('s_stripe_color').value,
+    eventFont:   document.getElementById('s_event_font').value,
+    eventColor:  document.getElementById('s_event_color').value,
+    dateFont:    document.getElementById('s_date_font').value,
+    dateColor:   document.getElementById('s_date_color').value,
+    nameFont:    document.getElementById('s_name_font').value,
+    nameColor:   document.getElementById('s_name_color').value,
+    roleFont:    document.getElementById('s_role_font').value,
+    roleColor:   document.getElementById('s_role_color').value,
+  };
+}
+
+function disegnaBadge(ctx, W, H, dati, stile) {
+  var PAD = Math.round(H * 0.047);
+  var STRIPE = Math.round(H * 0.054);
+  var QR_SIZE = Math.round(H * 0.44);
+
+  // Sfondo
+  ctx.fillStyle = stile.bgColor;
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#cccccc';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0.5, 0.5, W-1, H-1);
+
+  // Striscia
+  ctx.fillStyle = stile.stripeColor;
+  ctx.fillRect(0, 0, W, STRIPE);
+
+  var textW = W - QR_SIZE - PAD * 3;
+  var scale = W / 472; // fattore scala rispetto al canvas originale
+
+  // Nome evento
+  var evSize = Math.round(30 * scale);
+  ctx.font = '500 ' + evSize + 'px ' + stile.eventFont;
+  ctx.fillStyle = stile.eventColor;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  var evText = (dati.event || 'Nome Evento').toUpperCase();
+  while (ctx.measureText(evText).width > textW && evText.length > 3)
+    evText = evText.slice(0, -1);
+  ctx.fillText(evText, PAD, STRIPE + Math.round(10 * scale));
+
+  // Data
+  if (dati.date) {
+    var dtSize = Math.round(14 * scale);
+    ctx.font = dtSize + 'px ' + stile.dateFont;
+    ctx.fillStyle = stile.dateColor;
+    ctx.fillText(dati.date, PAD, STRIPE + Math.round(52 * scale));
+  }
+
+  // Nome
+  ctx.fillStyle = stile.nameColor;
+  ctx.textBaseline = 'top';
+  var nameSize = Math.round(38 * scale);
+  var minSize  = Math.round(20 * scale);
+  ctx.font = '500 ' + nameSize + 'px ' + stile.nameFont;
+  while (ctx.measureText(dati.name || 'Mario Rossi').width > textW + 20 && nameSize > minSize) {
+    nameSize--;
+    ctx.font = '500 ' + nameSize + 'px ' + stile.nameFont;
+  }
+  var nameY = STRIPE + Math.round(80 * scale);
+  var parts = (dati.name || 'Mario Rossi').split(' ');
+  if (parts.length >= 2 && ctx.measureText(dati.name || 'Mario Rossi').width > textW) {
+    var mid = Math.ceil(parts.length / 2);
+    ctx.fillText(parts.slice(0,mid).join(' '), PAD, nameY);
+    ctx.fillText(parts.slice(mid).join(' '), PAD, nameY + nameSize + 2);
+    nameY += nameSize + 2;
+  } else {
+    ctx.fillText(dati.name || 'Mario Rossi', PAD, nameY);
+  }
+
+  // Ruolo
+  if (dati.role) {
+    var rlSize = Math.round(30 * scale);
+    ctx.font = '700 ' + rlSize + 'px ' + stile.roleFont;
+    ctx.fillStyle = stile.roleColor;
+    ctx.fillText(dati.role.toUpperCase(), PAD, nameY + nameSize + Math.round(12 * scale));
+  }
+
+  // QR placeholder (nella preview) o reale (nel download)
+  if (dati.qrCanvas) {
+    var qrX = W - QR_SIZE - Math.round(PAD / 2);
+    var qrY = H - QR_SIZE - Math.round(PAD / 2);
+    ctx.drawImage(dati.qrCanvas, qrX, qrY, QR_SIZE, QR_SIZE);
+  } else {
+    // Placeholder QR a scacchi
+    var qrX = W - QR_SIZE - Math.round(PAD / 2);
+    var qrY = H - QR_SIZE - Math.round(PAD / 2);
+    var cell = Math.round(QR_SIZE / 7);
+    var pattern = [[1,1,1,1,1,1,1],[1,0,0,0,0,0,1],[1,0,1,1,1,0,1],[1,0,1,0,1,0,1],[1,0,1,1,1,0,1],[1,0,0,0,0,0,1],[1,1,1,1,1,1,1]];
+    for (var r=0; r<7; r++) for (var c=0; c<7; c++) {
+      ctx.fillStyle = pattern[r][c] ? '#1a2e1a' : '#ffffff';
+      ctx.fillRect(qrX + c*cell, qrY + r*cell, cell, cell);
+    }
+  }
+}
+
+function aggiornaPreview() {
+  var canvas = document.getElementById('previewCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var stile = getStile();
+  var dati = {
+    event: document.getElementById('eventName').value || 'Nome Evento',
+    date:  document.getElementById('eventDate').value || '17/07/2026',
+    name:  'Mario Rossi',
+    role:  document.getElementById('role').value || 'Capitano',
+    qrCanvas: null
+  };
+  disegnaBadge(ctx, canvas.width, canvas.height, dati, stile);
+}
+
+// Aggiorna la preview all'avvio
+window.addEventListener('load', function() {
+  // Attendi caricamento font Google
+  if (document.fonts) {
+    document.fonts.ready.then(aggiornaPreview);
+  } else {
+    setTimeout(aggiornaPreview, 500);
+  }
+});
+
 </script>
 </body>
 </html>
