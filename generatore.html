@@ -332,7 +332,7 @@ function downloadBadge(idx) {
 
   // Nome evento
   ctx.fillStyle = accent;
-  ctx.font = '500 15px Arial, sans-serif';
+  ctx.font = '500 30px Arial, sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
   // Tronca se troppo lungo
@@ -345,21 +345,21 @@ function downloadBadge(idx) {
   if (b.date) {
     ctx.font = '14px Arial, sans-serif';
     ctx.fillStyle = '#888888';
-    ctx.fillText(b.date, PAD, STRIPE + 24);
+    ctx.fillText(b.date, PAD, STRIPE + 52);
   }
 
   // Nome partecipante — grande
   ctx.fillStyle = '#1a2e1a';
   ctx.textBaseline = 'top';
-  var nameSize = 26;
+  var nameSize = 38;
   ctx.font = '500 ' + nameSize + 'px Georgia, serif';
-  while (ctx.measureText(b.name).width > textW + 20 && nameSize > 14) {
+  while (ctx.measureText(b.name).width > textW + 20 && nameSize > 20) {
     nameSize--;
     ctx.font = '500 ' + nameSize + 'px Georgia, serif';
   }
   // Spezza su due righe se necessario
   var nameParts = b.name.split(' ');
-  var nameY = STRIPE + 44;
+  var nameY = STRIPE + 80;
   if (nameParts.length >= 2 && ctx.measureText(b.name).width > textW) {
     var mid = Math.ceil(nameParts.length / 2);
     var line1 = nameParts.slice(0, mid).join(' ');
@@ -373,11 +373,9 @@ function downloadBadge(idx) {
 
   // Ruolo
   if (b.role) {
-    ctx.font = '500 15px Arial, sans-serif';
+    ctx.font = '700 30px Arial, sans-serif';
     ctx.fillStyle = accent;
-    ctx.letterSpacing = '0.15em';
-    ctx.fillText(b.role.toUpperCase(), PAD, nameY + nameSize + 10);
-    ctx.letterSpacing = '0';
+    ctx.fillText(b.role.toUpperCase(), PAD, nameY + nameSize + 12);
   }
 
 
@@ -422,7 +420,7 @@ function stampaTutti() {
 
     var textW = W - QR_SIZE - PAD * 3;
     ctx.fillStyle = accent;
-    ctx.font = '500 15px Arial, sans-serif';
+    ctx.font = '500 30px Arial, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     var evText = b.event.toUpperCase();
@@ -433,7 +431,7 @@ function stampaTutti() {
     if (b.date) {
       ctx.font = '14px Arial, sans-serif';
       ctx.fillStyle = '#888888';
-      ctx.fillText(b.date, PAD, STRIPE + 24);
+      ctx.fillText(b.date, PAD, STRIPE + 52);
     }
 
     ctx.fillStyle = '#1a2e1a';
@@ -445,7 +443,7 @@ function stampaTutti() {
       ctx.font = '500 ' + nameSize + 'px Georgia, serif';
     }
     var nameParts = b.name.split(' ');
-    var nameY = STRIPE + 44;
+    var nameY = STRIPE + 80;
     if (nameParts.length >= 2 && ctx.measureText(b.name).width > textW) {
       var mid = Math.ceil(nameParts.length / 2);
       ctx.fillText(nameParts.slice(0, mid).join(' '), PAD, nameY);
@@ -456,7 +454,7 @@ function stampaTutti() {
     }
 
     if (b.role) {
-      ctx.font = '700 15px Arial, sans-serif';
+      ctx.font = '700 30px Arial, sans-serif';
       ctx.fillStyle = accent;
       ctx.fillText(b.role.toUpperCase(), PAD, nameY + nameSize + 10);
     }
@@ -475,8 +473,8 @@ function stampaTutti() {
         + '@page { size: A4; margin: 8mm; }'
         + '* { box-sizing: border-box; margin: 0; padding: 0; }'
         + 'body { background: white; }'
-        + '.grid { display: flex; flex-wrap: wrap; gap: 4mm; padding: 0; }'
-        + '.badge-img { width: 80mm; height: 50mm; display: block; border: 0.3px solid #ddd; border-radius: 2mm; }'
+        + '.grid { display: flex; flex-wrap: wrap; gap: 4mm; padding: 0; align-content: flex-start; }'
+        + '.badge-img { width: 80mm !important; height: 50mm !important; min-width: 80mm; min-height: 50mm; max-width: 80mm; max-height: 50mm; display: block; object-fit: fill; border: 0.3px solid #ddd; border-radius: 2mm; flex-shrink: 0; }'
         + '</style></head><body>'
         + '<div class="grid">';
 
