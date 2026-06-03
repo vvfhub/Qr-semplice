@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Scanner Badge</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f0f0f0; min-height: 100vh; }
+
+/* ── SETUP ── */
+#setup { max-width: 480px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+h1 { font-size: 1.4rem; color: #222; text-align: center; margin: 16px 0 8px; }
+p.sub { font-size: 0.8rem; color: #888; text-align: center; margin-bottom: 8px; }
+
+.box { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 10px; }
+.box label { font-size: 0.75rem; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 0.05em; }
+.box input[type=password] { padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 6px; font-size: 0.9rem; width: 100%; outline: none; }
+.box input[type=password]:focus { border-color: #333; }
+
+.upload-zone { border: 2px dashed #ccc; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.15s; }
+.upload-zone:hover { border-color: #2e7d32; background: #f1f8f2; }
+.upload-zone.ok { border-color: #2e7d32; border-style: solid; background: #f1f8f2; }
+.upload-zone .icon { font-size: 2rem; margin-bottom: 6px; }
+.upload-zone .label { font-size: 0.8rem; color: #666; }
+.upload-zone .label strong { display: block; margin-top: 4px; color: #2e7d32; }
+
+.chip { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+.chip.ok { background: #e8f5e9; color: #2e7d32; border: 1px solid #2e7d32; }
+.chip.err { background: #ffebee; color: #c62828; border: 1px solid #c62828; }
+
+.btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: bold; cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em; }
+.btn-dark { background: #222; color: #fff; }
+.btn-dark:hover { background: #444; }
+.btn-dark:active { transform: scale(0.98); }
+
+/* ── SCAN SCREEN ── */
+#scan { display: none; flex-direction: column; min-height: 100vh; }
+
+.topbar { background: #222; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+.topbar span { font-size: 0.8rem; color: #e8b84b; font-weight: bold; }
+.topbar button { background: transparent; border: 1px solid #555; color: #aaa; padding: 5px 12px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; }
+.topbar button:hover { border-color: #e53935; color: #e53935; }
+
+/* Pulsante fotocamera */
+.cam-area { padding: 20px 16px 8px; }
+.cam-btn { width: 100%; background: #222; border: none; border-radius: 12px; padding: 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.cam-btn:active { background: #444; transform: scale(0.98); }
+.cam-btn .icon { font-size: 3.5rem; }
+.cam-btn .label { font-size: 1rem; font-weight: bold; letter-spacing: 0.1em; color: #e8b84b; }
+.cam-btn .hint { font-size: 0.72rem; color: #666; }
+
+/* Barra di stato */
+.statusbar { margin: 8px 16px; padding: 10px 14px; background: #fff; border-radius: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: #555; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.statusbar .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+.statusbar .dot.verde { background: #2e7d32; animation: pulse 1s infinite; }
+.statusbar .dot.rosso { background: #c62828; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Card risultato */
+#risultato { display: none; margin: 8px 16px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+.ris-top { padding: 18px 16px; display: flex; align-items: center; gap: 14px; background: #fff; }
+.ris-icon { font-size: 2.8rem; flex-shrink: 0; }
+.ris-nome { font-size: 1.2rem; font-weight: bold; line-height: 1.2; }
+.ris-nome.ok { color: #2e7d32; }
+.ris-nome.fail { color: #c62828; }
+.ris-nome.dup { color: #e65100; }
+.ris-sub { font-size: 0.75rem; font-weight: bold; margin-top: 3px; }
+.ris-sub.ok { color: #2e7d32; }
+.ris-sub.fail { color: #c62828; }
+.ris-sub.dup { color: #e65100; }
+.ris-dettaglio { font-size: 0.68rem; color: #888; margin-top: 3px; }
+.btn-ancora { width: 100%; padding: 14px; border: none; border-top: 1px solid #eee; background: #222; color: #e8b84b; font-size: 0.85rem; font-weight: bold; letter-spacing: 0.08em; cursor: pointer; }
+.btn-ancora:active { background: #444; }
+
+/* Log */
+.log-area { margin: 8px 16px 16px; }
+.log-title { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid #ddd; }
+.log-title h2 { font-size: 0.72rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; }
+.counters { font-size: 0.75rem; display: flex; gap: 12px; }
+.cnt-ok { color: #2e7d32; font-weight: bold; }
+.cnt-fail { color: #c62828; font-weight: bold; }
+.log-list { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; }
+.log-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: #fff; border-radius: 6px; font-size: 0.82rem; }
+.log-item .li-nome { flex: 1; font-weight: bold; }
+.log-item .li-nome.ok { color: #2e7d32; }
+.log-item .li-nome.fail { color: #c62828; }
+.log-item .li-nome.dup { color: #e65100; }
+.log-item .li-ora { font-size: 0.65rem; color: #aaa; }
+.empty { text-align: center; padding: 16px; font-size: 0.78rem; color: #bbb; border: 1px dashed #ddd; border-radius: 6px; }
+
+/* Canvas nascosto per eventuale elaborazione */
+#cvs { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     SCHERMATA 1: SETUP
+     L'operatore carica il CSV e inserisce
+     la chiave segreta prima di iniziare
+════════════════════════════════════════ -->
+<div id="setup">
+  <h1>⊙ Scanner Badge</h1>
+  <p class="sub">Carica la lista e inserisci la chiave per iniziare</p>
+
+  <!-- Zona upload CSV -->
+  <div class="box">
+    <label>① Lista partecipanti (file TXT)</label>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFile').click()">
+      <div class="icon">📂</div>
+      <div class="label">Tocca per caricare il file TXT
+        <strong id="uploadLabel">Nessun file caricato</strong>
+      </div>
+    </div>
+    <input type="file" id="csvFile" accept=".txt,.csv,text/plain,text/csv" style="display:none" onchange="caricaCSV(event)">
+    <div id="csvChip"></div>
+  </div>
+
+  <!-- Chiave segreta -->
+  <div class="box">
+    <label>② Chiave segreta evento</label>
+    <input type="password" id="chiave" placeholder="Inserisci la chiave comunicata dall'amministratore">
+  </div>
+
+  <button class="btn btn-dark" onclick="avvia()">▶ AVVIA SCANNER</button>
+
+  <p style="text-align:center;font-size:0.65rem;color:#bbb;padding:4px 0;">
+    🔒 Tutto funziona sul dispositivo — nessun dato inviato a server
+  </p>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCHERMATA 2: SCANSIONE
+     L'operatore scatta le foto dei badge
+════════════════════════════════════════ -->
+<div id="scan">
+
+  <!-- Barra superiore con nome evento e pulsante per tornare -->
+  <div class="topbar">
+    <span id="nomeEvento">Evento</span>
+    <button onclick="torna()">✕ Cambia lista</button>
+  </div>
+
+  <!-- Pulsante fotocamera -->
+  <div class="cam-area">
+    <input type="file" id="fotoInput" accept="image/*" capture="environment"
+           style="display:none" onchange="elaboraFoto(event)">
+    <button class="cam-btn" onclick="document.getElementById('fotoInput').click()">
+      <span class="icon">📷</span>
+      <span class="label">SCANSIONA BADGE</span>
+      <span class="hint">Tocca · inquadra · scatta quando è a fuoco</span>
+    </button>
+  </div>
+
+  <!-- Barra di stato -->
+  <div class="statusbar">
+    <div class="dot verde" id="dot"></div>
+    <span id="statoMsg">Pronto — tocca per scansionare</span>
+  </div>
+
+  <!-- Card risultato ultima scansione -->
+  <div id="risultato">
+    <div class="ris-top">
+      <div class="ris-icon" id="risIcon"></div>
+      <div>
+        <div class="ris-nome" id="risNome"></div>
+        <div class="ris-sub" id="risSub"></div>
+        <div class="ris-dettaglio" id="risDett"></div>
+      </div>
+    </div>
+    <button class="btn-ancora" onclick="scansionaProssimo()">📷 Scansiona prossimo badge</button>
+  </div>
+
+  <!-- Log scansioni -->
+  <div class="log-area">
+    <div class="log-title">
+      <h2>Scansioni sessione</h2>
+      <div class="counters">
+        <span class="cnt-ok">✓ <span id="cntOk">0</span></span>
+        <span class="cnt-fail">✗ <span id="cntFail">0</span></span>
+      </div>
+    </div>
+    <div class="log-list" id="logList">
+      <div class="empty" id="emptyLog">Nessuna scansione ancora.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Canvas nascosto usato per elaborazione immagine -->
+<canvas id="cvs"></canvas>
+
+<script>
+// ════════════════════════════════════════════════════════
+// BLOCCO 1 — CRYPTO
+// Verifica che la firma HMAC-SHA256 nel QR sia autentica.
+// Riceve il payload (dati del badge), la firma in esadecimale,
+// e la chiave segreta. Restituisce true se corrispondono.
+// ════════════════════════════════════════════════════════
+async function verificaFirma(payload, sigHex, chiave) {
+  try {
+    var enc = new TextEncoder();
+    var key = await crypto.subtle.importKey(
+      'raw', enc.encode(chiave),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false, ['verify']
+    );
+    var sigBytes = new Uint8Array(
+      sigHex.match(/.{2}/g).map(function(b) { return parseInt(b, 16); })
+    );
+    return await crypto.subtle.verify('HMAC', key, sigBytes, enc.encode(payload));
+  } catch(e) {
+    return false;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// BLOCCO 2 — STATO GLOBALE
+// Variabili che persistono durante tutta la sessione
+// ════════════════════════════════════════════════════════
+var payloadAutorizzati = new Set(); // tutti i payload validi dal CSV
+var infoEvento = { nome: '', data: '' };
+var giaScannerizzati = new Set();   // badge già letti in questa sessione
+var ultimoQR = '', ultimoQRtime = 0; // antirimbalzo
+var cntOk = 0, cntFail = 0;
+
+// ════════════════════════════════════════════════════════
+// BLOCCO 3 — CARICAMENTO CSV
+// Legge il file CSV esportato dal generatore.
+// Ogni riga contiene: ID, Nome, Evento, Data, Giorno, Ruolo, Payload
+// Il Payload è l'intera stringa firmata che andrà nel QR.
+// ════════════════════════════════════════════════════════
+function caricaCSV(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var righe = e.target.result
+      .split('\n')
+      .map(function(r) { return r.trim(); })
+      .filter(function(r) { return r.length > 0; });
+
+    if (righe.length < 2) {
+      mostraChip('err', '⚠ File vuoto o non valido');
+      return;
+    }
+
+    payloadAutorizzati.clear();
+    var contatore = 0;
+    var eventoImpostato = false;
+
+    // Salta la prima riga (intestazione) e legge le successive
+    for (var i = 1; i < righe.length; i++) {
+      var colonne = parseRigaCSV(righe[i]);
+      if (colonne.length < 7) continue;
+
+      var nomeEvento = colonne[2].trim();
+      var dataEvento = colonne[3].trim();
+      var payload    = colonne.slice(6).join('|').trim(); // riassembla il payload che contiene |SIG:
+
+      if (payload) {
+        payloadAutorizzati.add(payload);
+        contatore++;
+        if (!eventoImpostato) {
+          infoEvento.nome = nomeEvento;
+          infoEvento.data = dataEvento;
+          eventoImpostato = true;
+        }
+      }
+    }
+
+    if (contatore === 0) {
+      mostraChip('err', '⚠ Nessun partecipante trovato');
+      return;
+    }
+
+    mostraChip('ok', '✓ ' + contatore + ' partecipanti — ' + infoEvento.nome);
+    document.getElementById('uploadZone').classList.add('ok');
+    document.getElementById('uploadLabel').textContent = file.name;
+  };
+
+  reader.readAsText(file, 'UTF-8');
+}
+
+// Parser con separatore pipe |
+function parseRigaCSV(riga) {
+  return riga.split('|');
+}
+
+function mostraChip(tipo, msg) {
+  var chip = document.getElementById('csvChip');
+  chip.innerHTML = '<div class="chip ' + tipo + '">' + msg + '</div>';
+}
+
+// ════════════════════════════════════════════════════════
+// BLOCCO 4 — AVVIO SCANNER
+// Controlla che CSV e chiave siano inseriti,
+// poi mostra la schermata di scansione.
+// ════════════════════════════════════════════════════════
+function avvia() {
+  if (!payloadAutorizzati.size) {
+    alert('Carica prima il file TXT con la lista partecipanti.');
+    return;
+  }
+  if (!document.getElementById('chiave').value.trim()) {
+    alert('Inserisci la chiave segreta.');
+    return;
+  }
+
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('scan').style.display = 'flex';
+  document.getElementById('scan').style.flexDirection = 'column';
+  document.getElementById('nomeEvento').textContent =
+    '⊙ ' + infoEvento.nome + (infoEvento.data ? ' · ' + infoEvento.data : '');
+}
+
+// Torna al setup senza perdere la sessione di log
+function torna() {
+  document.getElementById('scan').style.display = 'none';
+  document.getElementById('setup').style.display = 'flex';
+}
+
+// Apre la fotocamera per scansionare il prossimo badge
+function scansionaProssimo() {
+  document.getElementById('fotoInput').value = '';
+  document.getElementById('fotoInput').click();
+}
+
+// ════════════════════════════════════════════════════════
+// BLOCCO 5 — ELABORAZIONE FOTO
+// Riceve la foto scattata dalla fotocamera nativa.
+// Tenta la decodifica del QR con due metodi in cascata:
+//   1. BarcodeDetector API (nativa, veloce, accurata)
+//   2. ZXing via Web Worker come fallback
+// ════════════════════════════════════════════════════════
+async function elaboraFoto(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+
+  // Mostra stato di elaborazione
+  document.querySelector('.cam-btn .label').textContent = 'ANALISI...';
+  document.querySelector('.cam-btn').style.opacity = '0.6';
+  impostaStato('verde', 'Analisi immagine in corso...');
+
+  function ripristina() {
+    document.querySelector('.cam-btn .label').textContent = 'SCANSIONA BADGE';
+    document.querySelector('.cam-btn').style.opacity = '1';
+    event.target.value = '';
+  }
+
+  // ── METODO 1: BarcodeDetector nativa ──
+  // Disponibile su Chrome Android e Safari iOS 17+
+  // È l'API più affidabile perché usa il motore nativo del SO
+  if (window.BarcodeDetector) {
+    try {
+      var detector = new BarcodeDetector({ formats: ['qr_code'] });
+      var bitmap = await createImageBitmap(file);
+      var codici = await detector.detect(bitmap);
+      bitmap.close();
+      ripristina();
+      if (codici.length > 0) {
+        gestisciQR(codici[0].rawValue);
+      } else {
+        impostaStato('rosso', '⚠ QR non trovato — riprova avvicinandoti');
+      }
+      return;
+    } catch(e) {
+      console.warn('BarcodeDetector errore:', e);
+    }
+  }
+
+  // ── METODO 2: ZXing su canvas ──
+  // Fallback per browser senza BarcodeDetector
+  // Carica l'immagine su canvas e prova più orientamenti
+  var url = URL.createObjectURL(file);
+  var img = new Image();
+
+  img.onload = async function() {
+    URL.revokeObjectURL(url);
+    var canvas = document.getElementById('cvs');
+    var ctx = canvas.getContext('2d');
+    var W = img.naturalWidth, H = img.naturalHeight;
+    var scale = Math.min(1200 / Math.max(W, H), 1);
+    var w = Math.round(W * scale), h = Math.round(H * scale);
+
+    // Prova orientamento normale
+    canvas.width = w; canvas.height = h;
+    ctx.drawImage(img, 0, 0, w, h);
+
+    // Se BarcodeDetector è disponibile ma ha fallito con il file,
+    // riprova con il canvas (immagine ridimensionata)
+    if (window.BarcodeDetector) {
+      try {
+        var det2 = new BarcodeDetector({ formats: ['qr_code'] });
+        var bmp2 = await createImageBitmap(canvas);
+        var codici2 = await det2.detect(bmp2);
+        bmp2.close();
+        ripristina();
+        if (codici2.length > 0) {
+          gestisciQR(codici2[0].rawValue);
+        } else {
+          impostaStato('rosso', '⚠ QR non trovato — riprova avvicinandoti');
+        }
+        return;
+      } catch(e) {}
+    }
+
+    // ── METODO 3: jsQR con padding ──
+    // jsQR richiede una quiet zone bianca intorno al QR.
+    // Aggiungiamo 40px di bordo bianco prima di passare l'immagine.
+    if (typeof jsQR !== 'undefined') {
+      var PAD = 40;
+      var canvas2 = document.getElementById('cvs');
+      var ctx2 = canvas2.getContext('2d');
+      var W2 = img.naturalWidth, H2 = img.naturalHeight;
+      var sc2 = Math.min(800 / Math.max(W2, H2), 1);
+      var w2 = Math.round(W2 * sc2), h2 = Math.round(H2 * sc2);
+
+      // Disegna su canvas con padding bianco
+      canvas2.width = w2 + PAD * 2;
+      canvas2.height = h2 + PAD * 2;
+      ctx2.fillStyle = '#ffffff';
+      ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
+      ctx2.drawImage(img, PAD, PAD, w2, h2);
+
+      var imgData = ctx2.getImageData(0, 0, canvas2.width, canvas2.height);
+      var code = jsQR(imgData.data, canvas2.width, canvas2.height, { inversionAttempts: 'attemptBoth' });
+      if (code && code.data) {
+        ripristina();
+        gestisciQR(code.data);
+        return;
+      }
+    }
+
+    ripristina();
+    impostaStato('rosso', '⚠ QR non trovato — riprova più vicino');
+  };
+
+  img.onerror = function() {
+    URL.revokeObjectURL(url);
+    ripristina();
+    impostaStato('rosso', 'Errore caricamento immagine');
+  };
+
+  img.src = url;
+}
+
+// ════════════════════════════════════════════════════════
+// BLOCCO 6 — GESTIONE QR
+// Una volta ottenuto il testo dal QR, esegue 5 controlli
+// in sequenza. Se uno fallisce, si ferma e mostra l'errore.
+// ════════════════════════════════════════════════════════
+async function gestisciQR(raw) {
+  var chiave = document.getElementById('chiave').value.trim();
+
+  // Antirimbalzo: stesso QR non processato per 2.8s
+  var ora = Date.now();
+  if (raw === ultimoQR && ora - ultimoQRtime < 2800) return;
+  ultimoQR = raw; ultimoQRtime = ora;
+
+  // Separa payload dalla firma: "{"id":...}|SIG:abc123"
+  var parti = raw.split('|SIG:');
+  var payloadStr = parti[0];
+  var sigHex = parti.length > 1 ? parti[1].trim() : null;
+
+  // Prova a decodificare il JSON
+  var dati = null;
+  try { dati = JSON.parse(payloadStr); } catch(e) {}
+
+  // ── CONTROLLO 1: Firma HMAC ──
+  // Verifica che il QR sia stato generato con la chiave corretta
+  var firmaOk = sigHex ? await verificaFirma(payloadStr, sigHex, chiave) : false;
+  if (!firmaOk) {
+    mostraRisultato('🚫', 'Badge non autentico', 'FIRMA NON VALIDA', '', 'fail');
+    return;
+  }
+
+  // ── CONTROLLO 2: Payload nel CSV ──
+  // Verifica che questo esatto badge sia nella lista caricata
+  if (!payloadAutorizzati.has(raw)) {
+    var nome = dati && dati.name ? dati.name : 'Sconosciuto';
+    mostraRisultato('🚫', nome, 'NON IN LISTA AUTORIZZATI', '', 'fail');
+    return;
+  }
+
+  // ── CONTROLLO 3: Evento corrispondente ──
+  // Evita che badge di un altro evento vengano accettati
+  if (dati && dati.event && dati.event !== infoEvento.nome) {
+    mostraRisultato('🚫', dati.name || '?', 'EVENTO NON CORRISPONDENTE', dati.event, 'fail');
+    return;
+  }
+
+  // ── CONTROLLO 4: Giorno autorizzato ──
+  // Confronta il giorno nel badge con il giorno di oggi
+  var giorni = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+  var oggi = giorni[new Date().getDay()];
+  var giornoQR = dati ? (dati.day || '') : '';
+  if (giornoQR && giornoQR !== oggi) {
+    mostraRisultato('🚫', dati.name, 'GIORNO NON AUTORIZZATO',
+      'Autorizzato: ' + giornoQR + ' — Oggi: ' + oggi, 'fail');
+    return;
+  }
+
+  // ── CONTROLLO 5: Duplicato ──
+  // Controlla se questo badge è già stato scansionato
+  var eGiaDuplicato = giaScannerizzati.has(raw);
+  giaScannerizzati.add(raw);
+  if (eGiaDuplicato) {
+    mostraRisultato('⚠️', dati.name, 'GIÀ SCANSIONATO', '', 'dup');
+    return;
+  }
+
+  // ── TUTTO OK ──
+  var ruolo = (dati.role || '').trim();
+  var icona = ruolo ? '🎫' : '✅';
+  var messaggio = ruolo ? 'AUTORIZZAZIONE · ' + ruolo.toUpperCase() : 'ACCESSO CONFERMATO';
+  var dettaglio = dati.id + (giornoQR ? ' · ' + giornoQR : '') + (dati.event ? ' · ' + dati.event : '');
+  mostraRisultato(icona, dati.name, messaggio, dettaglio, 'ok');
+}
+
+// ════════════════════════════════════════════════════════
+// BLOCCO 7 — INTERFACCIA
+// Aggiorna la card risultato, il log e la barra di stato
+// ════════════════════════════════════════════════════════
+function mostraRisultato(icona, nome, sub, dettaglio, tipo) {
+  // Card risultato
+  document.getElementById('risultato').style.display = 'block';
+  document.getElementById('risIcon').textContent = icona;
+
+  var nomeEl = document.getElementById('risNome');
+  nomeEl.textContent = nome;
+  nomeEl.className = 'ris-nome ' + tipo;
+
+  var subEl = document.getElementById('risSub');
+  subEl.textContent = sub;
+  subEl.className = 'ris-sub ' + tipo;
+
+  document.getElementById('risDett').textContent = dettaglio;
+
+  // Contatori
+  if (tipo === 'ok')   { cntOk++;   document.getElementById('cntOk').textContent = cntOk; }
+  if (tipo === 'fail') { cntFail++; document.getElementById('cntFail').textContent = cntFail; }
+
+  // Barra di stato
+  var stati = {
+    ok:   { dot: 'verde', msg: '✓ ' + nome + ' — OK' },
+    fail: { dot: 'rosso', msg: '✗ ' + sub },
+    dup:  { dot: 'rosso', msg: '⚠ ' + nome + ' — già scansionato' }
+  };
+  var s = stati[tipo] || stati.fail;
+  impostaStato(s.dot, s.msg);
+
+  // Log
+  var vuoto = document.getElementById('emptyLog');
+  if (vuoto) vuoto.remove();
+
+  var ora = new Date().toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  var icone = { ok:'✅', fail:'❌', dup:'⚠️' };
+  var item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML = '<span>' + (icone[tipo]||'❌') + '</span>'
+    + '<span class="li-nome ' + tipo + '">' + esc(nome) + '</span>'
+    + '<span class="li-ora">' + ora + '</span>';
+  var lista = document.getElementById('logList');
+  lista.insertBefore(item, lista.firstChild);
+}
+
+function impostaStato(colore, msg) {
+  document.getElementById('statoMsg').textContent = msg;
+  var dot = document.getElementById('dot');
+  dot.className = 'dot' + (colore ? ' ' + colore : '');
+}
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

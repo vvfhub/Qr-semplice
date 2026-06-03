@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generatore Badge QR</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:wght@400;700;900&display=swap');
+:root {
+  --ink: #1a1410; --paper: #f5f0e8; --cream: #ede7d5; --gold: #c4922a;
+  --gold-light: #e8b84b; --green: #1e7b4b; --red: #c0392b;
+  --border: #c8b99a; --muted: #8a7b65; --white: #fdfaf4;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--paper); color: var(--ink); font-family: 'Fraunces', serif; min-height: 100vh; }
+
+header { background: var(--ink); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; }
+header h1 { color: var(--gold-light); font-size: 1.1rem; letter-spacing: 0.06em; font-family: 'DM Mono', monospace; }
+header span { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.7rem; }
+
+.body { padding: 20px; display: flex; flex-direction: column; gap: 16px; max-width: 600px; margin: 0 auto; }
+
+.card { background: var(--white); border: 1.5px solid var(--border); border-radius: 6px; overflow: hidden; }
+.card-header { padding: 10px 16px; background: var(--ink); color: var(--gold-light); font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.card-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-family: 'DM Mono', monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.field input, .field select, .field textarea {
+  padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 4px;
+  background: var(--paper); font-family: 'DM Mono', monospace; font-size: 0.8rem;
+  color: var(--ink); outline: none; transition: border-color 0.15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--gold); }
+.field textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
+.field-row { display: flex; gap: 10px; }
+.field-row .field { flex: 1; }
+.hint { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+
+.key-field { border-color: var(--gold) !important; }
+.key-field label { color: var(--gold) !important; }
+.key-field input { border-color: var(--gold) !important; }
+
+.btn { padding: 13px; border: none; border-radius: 4px; cursor: pointer; font-family: 'DM Mono', monospace; font-weight: 500; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s; }
+.btn-primary { background: var(--ink); color: var(--gold-light); width: 100%; }
+.btn-primary:hover { background: #2d2620; }
+.btn-secondary { background: transparent; border: 1.5px solid var(--border); color: var(--ink); }
+.btn-secondary:hover { border-color: var(--ink); }
+.btn-green { background: var(--green); color: #fff; }
+.btn-green:hover { background: #165c38; }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn { flex: 1; }
+
+#previewArea { display: none; flex-direction: column; gap: 14px; }
+.preview-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--green); border-radius: 4px; color: #fff; font-family: 'DM Mono', monospace; font-size: 0.75rem; }
+
+.badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.badge-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
+.badge-card:hover { border-color: var(--gold); box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.badge-card canvas { width: 160px !important; height: 160px !important; display: block; margin: 6px auto; }
+.badge-name { font-weight: 700; font-size: 0.82rem; line-height: 1.2; }
+.badge-meta { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--muted); margin-top: 3px; }
+.badge-day { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--gold); margin-top: 2px; text-transform: uppercase; }
+.secure-badge { display: inline-block; background: var(--green); color: #fff; font-family: 'DM Mono', monospace; font-size: 0.6rem; padding: 2px 7px; border-radius: 10px; margin-top: 4px; }
+
+@media print {
+  header, .card, #previewArea > .btn-row, .preview-bar { display: none !important; }
+  .badges-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 80mm);
+    grid-auto-rows: 50mm;
+    gap: 4mm;
+    padding: 0;
+  }
+  .badge-card {
+    page-break-inside: avoid;
+    border: 0.5px solid #ccc;
+    border-radius: 2mm;
+    width: 80mm;
+    height: 50mm;
+    overflow: hidden;
+  }
+  .badge-card canvas { display: none !important; }
+  #previewArea { display: flex !important; }
+  body { background: white; }
+}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="gate" style="position:fixed;inset:0;background:#1a1410;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="text-align:center;margin-bottom:8px;">
+    <div style="font-size:2rem;margin-bottom:8px;">🔒</div>
+    <div style="font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:#e8b84b;">Area Amministratore</div>
+    <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:#555;margin-top:4px;">Accesso riservato</div>
+  </div>
+  <input type="password" id="gateInput" placeholder="Password…" onkeydown="if(event.key==='Enter') checkGate()"
+    style="padding:12px 18px;border:1.5px solid #333;border-radius:4px;background:#111;color:#e8b84b;font-family:'DM Mono',monospace;font-size:0.85rem;outline:none;width:240px;text-align:center;letter-spacing:0.08em;">
+  <button onclick="checkGate()" style="padding:11px 32px;background:#e8b84b;color:#1a1410;border:none;border-radius:4px;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">ENTRA</button>
+  <div id="gateErr" style="font-family:'DM Mono',monospace;font-size:0.68rem;color:#c0392b;min-height:18px;letter-spacing:0.06em;"></div>
+</div>
+
+<header>
+  <h1>⊞ GENERATORE BADGE</h1>
+  <span>Solo uso amministratore</span>
+</header>
+
+<div class="body">
+
+  <div class="card">
+    <div class="card-header">① Dati Evento</div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Nome Evento</label>
+          <input type="text" id="eventName" placeholder="es. Convegno VVF 2025">
+        </div>
+        <div class="field">
+          <label>Data</label>
+          <input type="text" id="eventDate" placeholder="es. 15/06/2025">
+        </div>
+      </div>
+      <div class="field key-field">
+        <label>🔑 Chiave Segreta</label>
+        <input type="password" id="secretKey" placeholder="Scegli una password robusta…">
+        <div class="hint">Conservala e comunicala solo agli operatori scanner.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">② Partecipanti</div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Giorno Autorizzato</label>
+          <select id="allowedDay">
+            <option value="">Tutti i giorni</option>
+            <option value="Lunedì">Lunedì</option>
+            <option value="Martedì">Martedì</option>
+            <option value="Mercoledì">Mercoledì</option>
+            <option value="Giovedì">Giovedì</option>
+            <option value="Venerdì">Venerdì</option>
+            <option value="Sabato">Sabato</option>
+            <option value="Domenica">Domenica</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Ruolo (opzionale)</label>
+          <input type="text" id="role" placeholder="es. Capitano, VIP, Staff…">
+        </div>
+        <div class="field" style="max-width:80px;">
+          <label>Colore</label>
+          <input type="color" id="badgeColor" value="#5DCAA5"
+            style="width:100%;height:42px;padding:2px;border:1.5px solid var(--border);border-radius:4px;background:var(--paper);cursor:pointer;">
+        </div>
+      </div>
+      <div class="field">
+        <label>Nomi Partecipanti (uno per riga)</label>
+        <textarea id="nameList" placeholder="Mario Rossi&#10;Giulia Bianchi&#10;Luca Verdi&#10;…"></textarea>
+        <div class="hint">Puoi aggiungere più gruppi con giorni diversi — ogni generazione si accumula.</div>
+      </div>
+      <button class="btn btn-primary" onclick="generateBadges()">⊞ GENERA BADGE QR</button>
+    </div>
+  </div>
+
+  <div id="previewArea">
+    <div class="preview-bar">
+      <span id="previewCount">0 badge</span>
+      <span style="opacity:0.8;font-size:0.65rem;">Clicca un badge per scaricarlo come PNG</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="stampaTutti()">🖨 Stampa tutti</button>
+      <button class="btn btn-green" onclick="exportCSV()">↓ Esporta CSV</button>
+      <button class="btn btn-secondary" onclick="clearAll()">✕ Azzera</button>
+    </div>
+    <div class="badges-grid" id="badgesGrid"></div>
+  </div>
+
+</div>
+
+<script>
+// ── GATE ─────────────────────────────────────────────────
+function checkGate() {
+  hashPassword(document.getElementById('gateInput').value).then(function(h) {
+    if (h === 'ca30c2adb9e7f6dc9497ca2c85919a7b733bc81bec3f378a6ec10944d00f5781') {
+      document.getElementById('gate').style.display = 'none';
+    } else {
+      document.getElementById('gateErr').textContent = 'Password errata';
+      document.getElementById('gateInput').value = '';
+      document.getElementById('gateInput').focus();
+      setTimeout(function() { document.getElementById('gateErr').textContent = ''; }, 2000);
+    }
+  });
+}
+
+async function hashPassword(pwd) {
+  var enc = new TextEncoder();
+  var buf = await crypto.subtle.digest('SHA-256', enc.encode(pwd));
+  return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+// ── CRYPTO ────────────────────────────────────────────────
+async function getKey(secret) {
+  var enc = new TextEncoder();
+  return crypto.subtle.importKey('raw', enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+}
+
+async function sign(payload, secret) {
+  var enc = new TextEncoder();
+  var key = await getKey(secret);
+  var sig = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
+  return Array.from(new Uint8Array(sig)).map(function(b) {
+    return b.toString(16).padStart(2, '0');
+  }).join('');
+}
+
+// ── STATE ─────────────────────────────────────────────────
+var allBadges = [];
+
+// ── GENERATOR ─────────────────────────────────────────────
+async function generateBadges() {
+  var names = document.getElementById('nameList').value
+    .split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l; });
+  var eventVal = document.getElementById('eventName').value.trim();
+  var dateVal  = document.getElementById('eventDate').value.trim();
+  var dayVal   = document.getElementById('allowedDay').value;
+  var roleVal  = document.getElementById('role').value.trim();
+  var colorVal = document.getElementById('badgeColor').value;
+  var secret   = document.getElementById('secretKey').value.trim();
+
+  if (!eventVal) { alert('Inserisci il nome dell\'evento.'); return; }
+  if (!secret)   { alert('Inserisci la chiave segreta.'); return; }
+  if (!names.length) { alert('Inserisci almeno un nome.'); return; }
+
+  var startIdx = allBadges.length;
+
+  for (var i = 0; i < names.length; i++) {
+    var name = names[i];
+    var id = 'P' + String(startIdx + i + 1).padStart(3, '0');
+    var payloadObj = { id: id, name: name, event: eventVal, date: dateVal, day: dayVal, role: roleVal };
+    var payloadStr = JSON.stringify(payloadObj);
+    var sig = await sign(payloadStr, secret);
+    var finalPayload = payloadStr + '|SIG:' + sig;
+    allBadges.push({ id: id, name: name, event: eventVal, date: dateVal, day: dayVal, role: roleVal, color: colorVal, payload: finalPayload });
+  }
+
+  renderGrid();
+  document.getElementById('nameList').value = '';
+}
+
+function renderGrid() {
+  var grid = document.getElementById('badgesGrid');
+  grid.innerHTML = '';
+
+  allBadges.forEach(function(b, idx) {
+    var card = document.createElement('div');
+    card.className = 'badge-card';
+
+    var qrCanvas = document.createElement('canvas');
+    qrCanvas.setAttribute('data-idx', idx);
+    new QRious({ element: qrCanvas, value: b.payload, size: 220,
+      foreground: '#1a1410', background: '#fdfaf4', level: 'M' });
+
+    var nameEl = document.createElement('div');
+    nameEl.className = 'badge-name';
+    nameEl.textContent = b.name;
+
+    var metaEl = document.createElement('div');
+    metaEl.className = 'badge-meta';
+    metaEl.textContent = b.event + (b.date ? ' · ' + b.date : '') + ' · ' + b.id;
+
+    var dayEl = document.createElement('div');
+    dayEl.className = 'badge-day';
+    dayEl.style.color = b.color || 'var(--gold)';
+    dayEl.textContent = (b.day || 'Tutti i giorni') + (b.role ? ' · ' + b.role : '');
+
+    var secEl = document.createElement('div');
+    secEl.innerHTML = '<span class="secure-badge">🔒 Firmato</span>';
+
+    card.appendChild(qrCanvas);
+    card.appendChild(nameEl);
+    card.appendChild(metaEl);
+    card.appendChild(dayEl);
+    card.appendChild(secEl);
+
+    (function(capturedIdx) {
+      card.onclick = function() { downloadBadge(capturedIdx); };
+    })(idx);
+
+    grid.appendChild(card);
+  });
+
+  document.getElementById('previewCount').textContent = allBadges.length + ' badge generati';
+  document.getElementById('previewArea').style.display = 'flex';
+}
+
+function downloadBadge(idx) {
+  var b = allBadges[idx];
+  var srcCanvas = document.querySelector('canvas[data-idx="' + idx + '"]');
+  if (!srcCanvas) return;
+
+  // 80x50mm a 150dpi: 472x295px
+  var W = 472, H = 295;
+  var PAD = 14;
+  var STRIPE = 16;
+  var QR_SIZE = 130;
+  var accent = b.color || '#1D9E75';
+
+  var c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  var ctx = c.getContext('2d');
+
+  // Sfondo bianco
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  // Bordo sottile
+  ctx.strokeStyle = '#cccccc';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
+
+  // Striscia colorata in cima
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, W, STRIPE);
+
+  // ── TESTO a sinistra ──
+  var textW = W - QR_SIZE - PAD * 3; // larghezza zona testo
+
+  // Nome evento
+  ctx.fillStyle = accent;
+  ctx.font = '500 10px Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  // Tronca se troppo lungo
+  var evText = b.event.toUpperCase();
+  while (ctx.measureText(evText).width > textW && evText.length > 3)
+    evText = evText.slice(0, -1);
+  ctx.fillText(evText, PAD, STRIPE + 10);
+
+  // Data
+  if (b.date) {
+    ctx.font = '10px Arial, sans-serif';
+    ctx.fillStyle = '#888888';
+    ctx.fillText(b.date, PAD, STRIPE + 24);
+  }
+
+  // Nome partecipante — grande
+  ctx.fillStyle = '#1a2e1a';
+  ctx.textBaseline = 'top';
+  var nameSize = 26;
+  ctx.font = '500 ' + nameSize + 'px Georgia, serif';
+  while (ctx.measureText(b.name).width > textW + 20 && nameSize > 14) {
+    nameSize--;
+    ctx.font = '500 ' + nameSize + 'px Georgia, serif';
+  }
+  // Spezza su due righe se necessario
+  var nameParts = b.name.split(' ');
+  var nameY = STRIPE + 44;
+  if (nameParts.length >= 2 && ctx.measureText(b.name).width > textW) {
+    var mid = Math.ceil(nameParts.length / 2);
+    var line1 = nameParts.slice(0, mid).join(' ');
+    var line2 = nameParts.slice(mid).join(' ');
+    ctx.fillText(line1, PAD, nameY);
+    ctx.fillText(line2, PAD, nameY + nameSize + 2);
+    nameY += nameSize + 2;
+  } else {
+    ctx.fillText(b.name, PAD, nameY);
+  }
+
+  // Ruolo
+  if (b.role) {
+    ctx.font = '500 10px Arial, sans-serif';
+    ctx.fillStyle = accent;
+    ctx.letterSpacing = '0.15em';
+    ctx.fillText(b.role.toUpperCase(), PAD, nameY + nameSize + 10);
+    ctx.letterSpacing = '0';
+  }
+
+
+
+  // ── QR in basso a destra ──
+  var qrX = W - QR_SIZE - PAD / 2;
+  var qrY = H - QR_SIZE - PAD / 2;
+  ctx.drawImage(srcCanvas, qrX, qrY, QR_SIZE, QR_SIZE);
+
+  var a = document.createElement('a');
+  a.href = c.toDataURL('image/png');
+  a.download = 'badge_' + b.name.replace(/\s+/g, '_') + '_' + b.id + '.png';
+  a.click();
+}
+
+function stampaTutti() {
+  if (!allBadges.length) { alert('Genera prima i badge.'); return; }
+
+  // Genera tutti i PNG e apre una pagina di stampa
+  var images = [];
+  var total = allBadges.length;
+  var done = 0;
+
+  allBadges.forEach(function(b, idx) {
+    var srcCanvas = document.querySelector('canvas[data-idx="' + idx + '"]');
+    if (!srcCanvas) { done++; return; }
+
+    var W = 472, H = 295, PAD = 14, STRIPE = 16, QR_SIZE = 130;
+    var accent = b.color || '#1D9E75';
+
+    var c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var ctx = c.getContext('2d');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = '#cccccc';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
+    ctx.fillStyle = accent;
+    ctx.fillRect(0, 0, W, STRIPE);
+
+    var textW = W - QR_SIZE - PAD * 3;
+    ctx.fillStyle = accent;
+    ctx.font = '500 10px Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    var evText = b.event.toUpperCase();
+    while (ctx.measureText(evText).width > textW && evText.length > 3)
+      evText = evText.slice(0, -1);
+    ctx.fillText(evText, PAD, STRIPE + 10);
+
+    if (b.date) {
+      ctx.font = '10px Arial, sans-serif';
+      ctx.fillStyle = '#888888';
+      ctx.fillText(b.date, PAD, STRIPE + 24);
+    }
+
+    ctx.fillStyle = '#1a2e1a';
+    ctx.textBaseline = 'top';
+    var nameSize = 26;
+    ctx.font = '500 ' + nameSize + 'px Georgia, serif';
+    while (ctx.measureText(b.name).width > textW + 20 && nameSize > 14) {
+      nameSize--;
+      ctx.font = '500 ' + nameSize + 'px Georgia, serif';
+    }
+    var nameParts = b.name.split(' ');
+    var nameY = STRIPE + 44;
+    if (nameParts.length >= 2 && ctx.measureText(b.name).width > textW) {
+      var mid = Math.ceil(nameParts.length / 2);
+      ctx.fillText(nameParts.slice(0, mid).join(' '), PAD, nameY);
+      ctx.fillText(nameParts.slice(mid).join(' '), PAD, nameY + nameSize + 2);
+      nameY += nameSize + 2;
+    } else {
+      ctx.fillText(b.name, PAD, nameY);
+    }
+
+    if (b.role) {
+      ctx.font = '500 10px Arial, sans-serif';
+      ctx.fillStyle = accent;
+      ctx.fillText(b.role.toUpperCase(), PAD, nameY + nameSize + 10);
+    }
+
+    var qrX = W - QR_SIZE - PAD / 2;
+    var qrY = H - QR_SIZE - PAD / 2;
+    ctx.drawImage(srcCanvas, qrX, qrY, QR_SIZE, QR_SIZE);
+
+    images[idx] = c.toDataURL('image/png');
+    done++;
+
+    if (done === total) {
+      // Apre finestra di stampa
+      var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Stampa Badge</title>'
+        + '<style>'
+        + '@page { size: A4; margin: 8mm; }'
+        + '* { box-sizing: border-box; margin: 0; padding: 0; }'
+        + 'body { background: white; }'
+        + '.grid { display: flex; flex-wrap: wrap; gap: 4mm; padding: 0; }'
+        + '.badge-img { width: 80mm; height: 50mm; display: block; border: 0.3px solid #ddd; border-radius: 2mm; }'
+        + '</style></head><body>'
+        + '<div class="grid">';
+
+      images.forEach(function(src) {
+        if (src) html += '<img class="badge-img" src="' + src + '">';
+      });
+
+      html += '</div><script>window.onload=function(){window.print();}<\/script></body></html>';
+
+      var w = window.open('', '_blank');
+      w.document.write(html);
+      w.document.close();
+    }
+  });
+}
+
+function exportCSV() {
+  if (!allBadges.length) { alert('Genera prima i badge.'); return; }
+  var rows = [['ID', 'Nome', 'Evento', 'Data', 'Giorno', 'Ruolo', 'Payload']];
+  allBadges.forEach(function(b) {
+    rows.push([b.id, b.name, b.event, b.date, b.day || '', b.role || '', b.payload]);
+  });
+  var csv = rows.map(function(r) {
+    return r.join('|');
+  }).join('\n');
+  var blob = new Blob([csv], { type: 'text/plain;charset=utf-8;' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'lista_' + (document.getElementById('eventName').value.trim() || 'evento').replace(/\s+/g, '_') + '.txt';
+  a.click();
+}
+
+function clearAll() {
+  if (!confirm('Azzerare tutti i badge generati?')) return;
+  allBadges = [];
+  document.getElementById('badgesGrid').innerHTML = '';
+  document.getElementById('previewArea').style.display = 'none';
+}
+</script>
+</body>
+</html>

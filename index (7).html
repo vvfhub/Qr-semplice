@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Badge QR System</title>
+<style>
+  body { font-family: monospace; background: #1a1410; color: #e8b84b; 
+    display: flex; align-items: center; justify-content: center; 
+    min-height: 100vh; margin: 0; }
+  .box { text-align: center; }
+  h1 { font-size: 1rem; letter-spacing: 0.1em; margin-bottom: 32px; opacity: 0.5; }
+  a { display: block; padding: 16px 32px; margin: 10px auto; max-width: 260px;
+    border-radius: 6px; text-decoration: none; font-size: 0.9rem; 
+    letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s; }
+  .scanner { background: #e8b84b; color: #1a1410; font-weight: bold; }
+  .scanner:hover { background: #f5cc6a; }
+  .gen { border: 1px solid #444; color: #666; }
+  .gen:hover { border-color: #666; color: #888; }
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>BADGE QR SYSTEM</h1>
+  <a class="scanner" href="scanner.html">⊙ Apri Scanner</a>
+  <a class="gen" href="generatore.html">⊞ Generatore (admin)</a>
+</div>
+</body>
+</html>
