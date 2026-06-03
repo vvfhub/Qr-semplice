@@ -332,7 +332,7 @@ function downloadBadge(idx) {
 
   // Nome evento
   ctx.fillStyle = accent;
-  ctx.font = '500 10px Arial, sans-serif';
+  ctx.font = '500 15px Arial, sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
   // Tronca se troppo lungo
@@ -343,7 +343,7 @@ function downloadBadge(idx) {
 
   // Data
   if (b.date) {
-    ctx.font = '10px Arial, sans-serif';
+    ctx.font = '14px Arial, sans-serif';
     ctx.fillStyle = '#888888';
     ctx.fillText(b.date, PAD, STRIPE + 24);
   }
@@ -373,7 +373,7 @@ function downloadBadge(idx) {
 
   // Ruolo
   if (b.role) {
-    ctx.font = '500 10px Arial, sans-serif';
+    ctx.font = '500 15px Arial, sans-serif';
     ctx.fillStyle = accent;
     ctx.letterSpacing = '0.15em';
     ctx.fillText(b.role.toUpperCase(), PAD, nameY + nameSize + 10);
@@ -422,7 +422,7 @@ function stampaTutti() {
 
     var textW = W - QR_SIZE - PAD * 3;
     ctx.fillStyle = accent;
-    ctx.font = '500 10px Arial, sans-serif';
+    ctx.font = '500 15px Arial, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     var evText = b.event.toUpperCase();
@@ -431,16 +431,16 @@ function stampaTutti() {
     ctx.fillText(evText, PAD, STRIPE + 10);
 
     if (b.date) {
-      ctx.font = '10px Arial, sans-serif';
+      ctx.font = '14px Arial, sans-serif';
       ctx.fillStyle = '#888888';
       ctx.fillText(b.date, PAD, STRIPE + 24);
     }
 
     ctx.fillStyle = '#1a2e1a';
     ctx.textBaseline = 'top';
-    var nameSize = 26;
+    var nameSize = 38;
     ctx.font = '500 ' + nameSize + 'px Georgia, serif';
-    while (ctx.measureText(b.name).width > textW + 20 && nameSize > 14) {
+    while (ctx.measureText(b.name).width > textW + 20 && nameSize > 20) {
       nameSize--;
       ctx.font = '500 ' + nameSize + 'px Georgia, serif';
     }
@@ -456,7 +456,7 @@ function stampaTutti() {
     }
 
     if (b.role) {
-      ctx.font = '500 10px Arial, sans-serif';
+      ctx.font = '700 15px Arial, sans-serif';
       ctx.fillStyle = accent;
       ctx.fillText(b.role.toUpperCase(), PAD, nameY + nameSize + 10);
     }
