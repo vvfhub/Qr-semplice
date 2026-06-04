@@ -527,12 +527,16 @@ function disegnaBadge(ctx, W, H, dati, stile) {
     evY += Math.round(evSize * 1.2);
   });
 
-  // Data
+  // Data — in alto a destra dentro la striscia
   if (dati.date) {
-    var dtSize = Math.round(14 * scale);
-    ctx.font = dtSize + 'px ' + stile.dateFont;
-    ctx.fillStyle = stile.dateColor;
-    ctx.fillText(dati.date, PAD, STRIPE + Math.round(52 * scale));
+    var dtSize = Math.round(11 * scale);
+    ctx.font = '500 ' + dtSize + 'px ' + stile.dateFont;
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(dati.date, W - PAD, STRIPE / 2);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
   }
 
   // Nome
@@ -545,7 +549,7 @@ function disegnaBadge(ctx, W, H, dati, stile) {
     nameSize--;
     ctx.font = '500 ' + nameSize + 'px ' + stile.nameFont;
   }
-  var nameY = STRIPE + Math.round(80 * scale);
+  var nameY = evY + Math.round(10 * scale);
   var parts = (dati.name || 'Mario Rossi').split(' ');
   if (parts.length >= 2 && ctx.measureText(dati.name || 'Mario Rossi').width > textW) {
     var mid = Math.ceil(parts.length / 2);
