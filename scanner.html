@@ -256,7 +256,7 @@ function caricaCSV(event) {
       var colonne = parseRigaCSV(righe[i]);
       if (colonne.length < 7) continue;
 
-      var nomeEvento = colonne[2].trim();
+      var nomeEvento = colonne[2].trim().replace(/↵/g, '\n');
       var dataEvento = colonne[3].trim();
       var payload    = colonne[6] ? colonne[6].trim() : ''; // riassembla il payload che contiene |SIG:
 

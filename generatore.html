@@ -457,7 +457,7 @@ function exportCSV() {
   if (!allBadges.length) { alert('Genera prima i badge.'); return; }
   var rows = [['ID', 'Nome', 'Evento', 'Data', 'Giorno', 'Ruolo', 'Payload']];
   allBadges.forEach(function(b) {
-    rows.push([b.id, b.name, b.event, b.date, b.day || '', b.role || '', b.payload]);
+    rows.push([b.id, b.name, (b.event || '').replace(/\n/g, '↵'), b.date, b.day || '', b.role || '', b.payload]);
   });
   var csv = rows.map(function(r) {
     return r.join('§§');
