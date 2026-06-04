@@ -444,7 +444,7 @@ function stampaTutti() {
       images.forEach(function(src) {
         if (src) html += '<img class="badge-img" src="' + src + '">';
       });
-      html += '</div><script>window.onload=function(){window.print();}<\/script></body></html>';
+      html += '</div><script>window.onload=function(){window.print();}</' + 'script></body></html>';
       var w = window.open('', '_blank');
       w.document.write(html);
       w.document.close();
@@ -475,7 +475,7 @@ function clearAll() {
   document.getElementById('badgesGrid').innerHTML = '';
   document.getElementById('previewArea').style.display = 'none';
 }
-</script>
+
 
 // ── LIVE PREVIEW ──────────────────────────────────────────
 function getStile() {
