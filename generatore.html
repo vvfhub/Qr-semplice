@@ -116,7 +116,7 @@ header span { color: var(--muted); font-family: monospace; font-size: 0.7rem; }
       <div class="field-row">
         <div class="field">
           <label>Nome Evento</label>
-          <input type="text" id="eventName" placeholder="es. Congresso 2026" oninput="aggiornaPreview()">
+          <textarea id="eventName" placeholder="es. Congresso 2026&#10;Felici per sempre!" oninput="aggiornaPreview()" style="min-height:60px;resize:vertical;"></textarea>
         </div>
         <div class="field">
           <label>Data</label>
@@ -336,7 +336,7 @@ async function generateBadges() {
     var payloadStr = JSON.stringify(payloadObj);
     var sig = await sign(payloadStr, secret);
     var finalPayload = payloadStr + '|SIG:' + sig;
-    allBadges.push({ id: id, name: name, event: eventVal, date: dateVal, day: dayVal, role: roleVal, color: colorVal, stile: getStile(), payload: finalPayload });
+    allBadges.push({ id: id, name: name, event: eventVal, date: dateVal, day: dayVal, role: roleVal, stile: getStile(), payload: finalPayload });
   }
 
   renderGrid();
@@ -512,16 +512,20 @@ function disegnaBadge(ctx, W, H, dati, stile) {
   var textW = W - QR_SIZE - PAD * 3;
   var scale = W / 472; // fattore scala rispetto al canvas originale
 
-  // Nome evento
+  // Nome evento (multiriga)
   var evSize = Math.round(30 * scale);
   ctx.font = '500 ' + evSize + 'px ' + stile.eventFont;
   ctx.fillStyle = stile.eventColor;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
-  var evText = (dati.event || 'Nome Evento').toUpperCase();
-  while (ctx.measureText(evText).width > textW && evText.length > 3)
-    evText = evText.slice(0, -1);
-  ctx.fillText(evText, PAD, STRIPE + Math.round(10 * scale));
+  var evLines = (dati.event || 'Nome Evento').split('\n').map(function(l){ return l.toUpperCase(); });
+  var evY = STRIPE + Math.round(10 * scale);
+  evLines.forEach(function(line) {
+    while (ctx.measureText(line).width > textW && line.length > 3)
+      line = line.slice(0, -1);
+    ctx.fillText(line, PAD, evY);
+    evY += Math.round(evSize * 1.2);
+  });
 
   // Data
   if (dati.date) {
