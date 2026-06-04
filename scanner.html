@@ -258,7 +258,7 @@ function caricaCSV(event) {
 
       var nomeEvento = colonne[2].trim();
       var dataEvento = colonne[3].trim();
-      var payload    = colonne.slice(6).join('|').trim(); // riassembla il payload che contiene |SIG:
+      var payload    = colonne[6] ? colonne[6].trim() : ''; // riassembla il payload che contiene |SIG:
 
       if (payload) {
         payloadAutorizzati.add(payload);
@@ -286,7 +286,7 @@ function caricaCSV(event) {
 
 // Parser con separatore pipe |
 function parseRigaCSV(riga) {
-  return riga.split('|');
+  return riga.split('§§');
 }
 
 function mostraChip(tipo, msg) {

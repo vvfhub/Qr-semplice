@@ -460,7 +460,7 @@ function exportCSV() {
     rows.push([b.id, b.name, b.event, b.date, b.day || '', b.role || '', b.payload]);
   });
   var csv = rows.map(function(r) {
-    return r.join('|');
+    return r.join('§§');
   }).join('\n');
   var blob = new Blob([csv], { type: 'text/plain;charset=utf-8;' });
   var a = document.createElement('a');
